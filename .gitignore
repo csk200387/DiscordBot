@@ -1,3 +1,5 @@
 __pycache__/
 discord/
 .env
+osu_token.json
+osu_user_table.json
