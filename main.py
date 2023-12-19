@@ -94,15 +94,43 @@ async def osu_info(interaction: discord.Interaction, username:str):
 
 
 
-@tree.command(name="button", description="Fuckyou")
-async def button_test(interaction:discord.Interaction):
-    button = discord.ui.Button(label="이거나 먹어라라", style=discord.ButtonStyle.primary)
+@tree.command(name="osubest", description="Fuckyou")
+async def button_test(interaction:discord.Interaction, username:str):
+    osu = Osu(OSU_CLIENT_ID, OSU_CLIENT_SECRET)
+
+    page_1 = discord.ui.Button(label="1", style=discord.ButtonStyle.secondary)
+    page_2 = discord.ui.Button(label="2", style=discord.ButtonStyle.secondary)
+    page_3 = discord.ui.Button(label="3", style=discord.ButtonStyle.secondary)
+    page_4 = discord.ui.Button(label="4", style=discord.ButtonStyle.secondary)
+
     view = discord.ui.View()
-    view.add_item(button)
-    async def bcallback(interaction:discord.Interaction):
-        await interaction.response.send_message("¯\_(ツ)_/¯")
-    button.callback = bcallback
-    await interaction.response.send_message("🖕", view=view)
+    view.add_item(page_1)
+    view.add_item(page_2)
+    view.add_item(page_3)
+    view.add_item(page_4)
+
+    async def show_page_1(interaction:discord.Interaction):
+        formated = osu.generate_user_best(username, 5, 0)
+        await interaction.response.edit_message(content=formated)
+    
+    async def show_page_2(interaction:discord.Interaction):
+        formated = osu.generate_user_best(username, 5, 5)
+        await interaction.response.edit_message(content=formated)
+    
+    async def show_page_3(interaction:discord.Interaction):
+        formated = osu.generate_user_best(username, 5, 10)
+        await interaction.response.edit_message(content=formated)
+    
+    async def show_page_4(interaction:discord.Interaction):
+        formated = osu.generate_user_best(username, 5, 15)
+        await interaction.response.edit_message(content=formated)
+    
+    page_1.callback = show_page_1
+    page_2.callback = show_page_2
+    page_3.callback = show_page_3
+    page_4.callback = show_page_4
+
+    await interaction.response.send_message(osu.generate_user_best(username, 5, 0), view=view)
 
 # run the bot
 client.run(DISCORD_TOKEN)

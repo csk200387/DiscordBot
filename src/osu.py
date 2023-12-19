@@ -15,18 +15,18 @@ class Osu:
             with open("osu_token.json", "r") as f:
                 token = json.load(f)
             if datetime.fromtimestamp(token["expires_at"]) < datetime.now():
-                token = self.generate_bearer_token()
+                token = self._generate_bearer_token()
                 with open("osu_token.json", "w") as f:
                     json.dump({"token": token, "expires_at": datetime.now().timestamp() + 86400}, f)
             else:
                 token = token["token"]
         else:
-            token = self.generate_bearer_token()
+            token = self._generate_bearer_token()
             with open("osu_token.json", "w") as f:
                 json.dump({"token": token, "expires_at": datetime.now().timestamp() + 86400}, f)
         return token
 
-    def generate_bearer_token(self) -> str:
+    def _generate_bearer_token(self) -> str:
         response = requests.post("https://osu.ppy.sh/oauth/token",
                                 headers={"Content-Type": "application/x-www-form-urlencoded",
                                         "Accept": "application/json"},
@@ -65,3 +65,25 @@ class Osu:
                                         "offset": offset})
         response = response.json()
         return response
+    
+    def generate_user_best(self, username:str, limit, offset) -> str:
+        user_info = self.get_user_best(username, limit, offset)
+    
+        res = []
+        for data in user_info:
+            title = data["beatmapset"]["title"]
+            artist = data["beatmapset"]["artist"]
+            version = data["beatmap"]["version"]
+            diff = data["beatmap"]["difficulty_rating"]
+            accuracy = round(data["accuracy"] * 100, 2)
+            rank = data["rank"]
+            pp = int(data["pp"])
+            rank_pp = int(data["weight"]["pp"])
+            date = data["created_at"].split("T")[0]
+            mods = data["mods"]
+
+            res.append(f"""🎵 {title} - {artist}
+{version} - {diff}★ ({accuracy}% {rank}) ({pp}P / {rank_pp}P)
+날짜 : {date}""" + (f" ({', '.join(mods)})" if mods else ""))
+        
+        return "```" + "\n\n".join(res) + "```"
