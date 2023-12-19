@@ -1,7 +1,7 @@
 import os
 import discord
 import requests
-from osu import Osu
+from src.osu import Osu
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -10,6 +10,16 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 OPEN_AI_TOKEN = os.getenv("OPEN_AI_TOKEN")
 OSU_CLIENT_ID = os.getenv("OSU_CLIENT_ID")
 OSU_CLIENT_SECRET = os.getenv("OSU_CLIENT_SECRET")
+
+if not DISCORD_TOKEN:
+    raise Exception("디스코드 토큰이 없습니다.")
+if not OPEN_AI_TOKEN:
+    raise Exception("오픈AI 토큰이 없습니다.")
+if not OSU_CLIENT_ID:
+    raise Exception("OSU 클라이언트 ID가 없습니다.")
+if not OSU_CLIENT_SECRET:
+    raise Exception("OSU 클라이언트 시크릿이 없습니다.")
+
 
 intents = discord.Intents.default() 
 # if you don't want all intents you can do discord.Intents.default()
@@ -57,19 +67,21 @@ async def slash_command(interaction: discord.Interaction, text:str):
 
 @tree.command(name="osuinfo", description="osu! 유저 정보 조회")
 async def osu_info(interaction: discord.Interaction, username:str):
-
+    username = username.strip()
+    
     osu = Osu(OSU_CLIENT_ID, OSU_CLIENT_SECRET)
     user_info = osu.get_user_info(username)
     
+    user_id = user_info["id"]
     avatar_url = user_info["avatar_url"]
-    global_rank = user_info["statistics"]["global_rank"]
-    country_rank = user_info["statistics"]["country_rank"]
+    global_rank = user_info["statistics"]["global_rank"] if user_info["statistics"]["global_rank"] else 0
+    country_rank = user_info["statistics"]["country_rank"] if user_info["statistics"]["country_rank"] else 0
     play_count = user_info["statistics"]["play_count"]
     pp = user_info["statistics"]["pp"]
     highest_rank = user_info["rank_highest"]["rank"]
     accuracy = user_info["statistics"]["hit_accuracy"]
 
-    embed = discord.Embed(title=username, color=discord.colour.Color.pink())
+    embed = discord.Embed(title=username, url=f"https://osu.ppy.sh/users/{user_id}", color=discord.colour.Color.from_rgb(255, 121, 184))
     embed.set_thumbnail(url=avatar_url)
     embed.add_field(name="세계순위", value=f"{global_rank:,}", inline=True)
     embed.add_field(name="국가순위", value=f"{country_rank:,}", inline=True)
@@ -81,6 +93,16 @@ async def osu_info(interaction: discord.Interaction, username:str):
     await interaction.response.send_message(embed=embed)
 
 
+
+@tree.command(name="button", description="Fuckyou")
+async def button_test(interaction:discord.Interaction):
+    button = discord.ui.Button(label="이거나 먹어라라", style=discord.ButtonStyle.primary)
+    view = discord.ui.View()
+    view.add_item(button)
+    async def bcallback(interaction:discord.Interaction):
+        await interaction.response.send_message("¯\_(ツ)_/¯")
+    button.callback = bcallback
+    await interaction.response.send_message("🖕", view=view)
 
 # run the bot
 client.run(DISCORD_TOKEN)
