@@ -20,6 +20,8 @@ if not OSU_CLIENT_ID:
 if not OSU_CLIENT_SECRET:
     raise Exception("OSU 클라이언트 시크릿이 없습니다.")
 
+OSU_BEST_PAGENUM = 1
+
 
 intents = discord.Intents.default() 
 # if you don't want all intents you can do discord.Intents.default()
@@ -97,8 +99,36 @@ async def osu_info(interaction: discord.Interaction, username:str):
 @tree.command(name="osubest", description="Fuckyou")
 async def button_test(interaction:discord.Interaction, username:str):
     osu = Osu(OSU_CLIENT_ID, OSU_CLIENT_SECRET)
+    global OSU_BEST_PAGENUM
+    OSU_BEST_PAGENUM = 1
 
-    page_1 = discord.ui.Button(label="1", style=discord.ButtonStyle.secondary)
+    prev = discord.ui.Button(label="<", style=discord.ButtonStyle.secondary)
+    next = discord.ui.Button(label=">", style=discord.ButtonStyle.secondary)
+
+    view = discord.ui.View()
+    view.add_item(prev)
+    view.add_item(next)
+
+    async def next_page(interaction:discord.Interaction):
+        global OSU_BEST_PAGENUM
+        if OSU_BEST_PAGENUM >= 8:
+            return
+        OSU_BEST_PAGENUM += 1
+        message = osu.generate_user_best(username, 5, 5*(OSU_BEST_PAGENUM-1))
+        await interaction.response.edit_message(content=f"```{message}\n{OSU_BEST_PAGENUM}/8 page```")
+    
+    async def prev_page(interaction:discord.Interaction):
+        global OSU_BEST_PAGENUM
+        if OSU_BEST_PAGENUM <= 1:
+            return
+        OSU_BEST_PAGENUM -= 1
+        message = osu.generate_user_best(username, 5, 5*(OSU_BEST_PAGENUM-1))
+        await interaction.response.edit_message(content=f"```{message}\n{OSU_BEST_PAGENUM}/8 page```")
+    
+    prev.callback = prev_page
+    next.callback = next_page
+
+    """ page_1 = discord.ui.Button(label="1", style=discord.ButtonStyle.secondary)
     page_2 = discord.ui.Button(label="2", style=discord.ButtonStyle.secondary)
     page_3 = discord.ui.Button(label="3", style=discord.ButtonStyle.secondary)
     page_4 = discord.ui.Button(label="4", style=discord.ButtonStyle.secondary)
@@ -124,13 +154,13 @@ async def button_test(interaction:discord.Interaction, username:str):
     async def show_page_4(interaction:discord.Interaction):
         formated = osu.generate_user_best(username, 5, 15)
         await interaction.response.edit_message(content=formated)
-    
+    f"📋{pagenumber}/4"
     page_1.callback = show_page_1
     page_2.callback = show_page_2
     page_3.callback = show_page_3
-    page_4.callback = show_page_4
+    page_4.callback = show_page_4 """
 
-    await interaction.response.send_message(osu.generate_user_best(username, 5, 0), view=view)
+    await interaction.response.send_message(f"```{osu.generate_user_best(username, 5, 0)}\n{OSU_BEST_PAGENUM}/8 page```", view=view)
 
 # run the bot
 client.run(DISCORD_TOKEN)

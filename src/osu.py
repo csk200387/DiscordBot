@@ -86,4 +86,4 @@ class Osu:
 {version} - {diff}★ ({accuracy}% {rank}) ({pp}P / {rank_pp}P)
 날짜 : {date}""" + (f" ({', '.join(mods)})" if mods else ""))
         
-        return "```" + "\n\n".join(res) + "```"
+        return "\n\n".join(res)
