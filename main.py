@@ -99,7 +99,7 @@ async def osu_info(interaction: discord.Interaction, username:str):
 
 
 @tree.command(name="osubest", description="osu! 최고 성과 조회")
-async def button_test(interaction:discord.Interaction, username:str):
+async def osu_best(interaction:discord.Interaction, username:str):
     osu = Osu(OSU_CLIENT_ID, OSU_CLIENT_SECRET)
     global OSU_BEST_PAGENUM
     OSU_BEST_PAGENUM = 1
@@ -131,6 +131,37 @@ async def button_test(interaction:discord.Interaction, username:str):
     next.callback = next_page
 
     await interaction.response.send_message(f"```{osu.generate_user_best(username, 5, 0)}\n{OSU_BEST_PAGENUM}/8 page```", view=view)
+
+
+@tree.command(name="osurecent", description="osu! 최근 클리어 조회")
+async def osu_recent(interaction:discord.Interaction, username:str):
+    osu = Osu(OSU_CLIENT_ID, OSU_CLIENT_SECRET)
+    recent_info = osu.get_user_recent(username, 1)
+
+    title = recent_info[0]["beatmapset"]["title"]
+    artist = recent_info[0]["beatmapset"]["artist"]
+    accuracy = round(recent_info[0]["accuracy"] * 100, 2)
+    status = recent_info[0]["beatmapset"]["status"]
+    total_length = recent_info[0]["beatmap"]["total_length"]
+    rank = recent_info[0]["rank"]
+    pp = int(recent_info[0]["pp"])
+    mods = ", ".join(recent_info[0]["mods"])
+    version = recent_info[0]["beatmap"]["version"]
+    diff = recent_info[0]["beatmap"]["difficulty_rating"]
+    bpm = recent_info[0]["beatmap"]["bpm"]
+    image = recent_info[0]["beatmapset"]["covers"]["list@2x"]
+    length = f"{total_length//60}:{total_length%60:02d}" if total_length >= 60 else f"0:{total_length}"
+
+
+    embed = discord.Embed(title=f"🎵{title} - {artist}", description=f"{version} - {diff}★ ({status})", color=discord.colour.Color.from_rgb(255, 121, 184))
+    embed.set_thumbnail(url=image)
+    embed.add_field(name="정확도", value=f"{accuracy}% ({rank})", inline=True)
+    embed.add_field(name="곡 길이", value=f"{length}", inline=True)
+    embed.add_field(name="BPM", value=f"{bpm}", inline=True)
+    embed.add_field(name="PP", value=f"{pp}PP", inline=True)
+    embed.add_field(name="모드", value=f"{mods}", inline=True)
+
+    await interaction.response.send_message(embed=embed)
 
 
 @tree.command(name="changestatus", description="bot의 상태를 변경합니다.")
