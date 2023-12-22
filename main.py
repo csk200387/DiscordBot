@@ -153,7 +153,7 @@ async def osu_recent(interaction:discord.Interaction, username:str):
     length = f"{total_length//60}:{total_length%60:02d}" if total_length >= 60 else f"0:{total_length}"
 
 
-    embed = discord.Embed(title=f"🎵{title} - {artist}", description=f"{version} - {diff}★ ({status})", color=discord.colour.Color.from_rgb(255, 121, 184))
+    embed = discord.Embed(title=f"🎵 {title} - {artist}", description=f"{version} - {diff}★ ({status})", color=discord.colour.Color.from_rgb(255, 121, 184))
     embed.set_thumbnail(url=image)
     embed.add_field(name="정확도", value=f"{accuracy}% ({rank})", inline=True)
     embed.add_field(name="곡 길이", value=f"{length}", inline=True)
