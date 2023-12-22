@@ -57,12 +57,34 @@ class Osu:
             userid = user_table[username]
 
         response = requests.get(f"https://osu.ppy.sh/api/v2/users/{userid}/scores/best",
-                                headers={"Authorization": f"Bearer {self.bearer_token}",    
+                                headers={"Authorization": f"Bearer {self.bearer_token}",
                                          "Accept": "application/json",
                                          "Content-Type": "application/json"},
                                 params={"mode": "mania",
                                         "limit": limit,
-                                        "offset": offset})
+                                        "offset": offset,})
+        response = response.json()
+        return response
+
+    def get_user_recent(self, username:str, limit=5, offset=0, include_fails=False) -> list:
+        with open("osu_user_table.json", "r") as f:
+            user_table = json.load(f)
+        if username not in user_table:
+            userid = self.get_user_info(username)["id"]
+            user_table[username] = userid
+            with open("osu_user_table.json", "w") as f:
+                json.dump(user_table, f)
+        else:
+            userid = user_table[username]
+
+        response = requests.get(f"https://osu.ppy.sh/api/v2/users/{userid}/scores/recent",
+                                headers={"Authorization": f"Bearer {self.bearer_token}",
+                                         "Accept": "application/json",
+                                         "Content-Type": "application/json"},
+                                params={"mode": "mania",
+                                        "limit": limit,
+                                        "offset": offset,
+                                        "include_fails": int(include_fails)})
         response = response.json()
         return response
     
