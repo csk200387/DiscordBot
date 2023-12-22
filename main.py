@@ -32,14 +32,15 @@ tree = discord.app_commands.CommandTree(client)
 # sync the slash command to your server
 @client.event
 async def on_ready():
+    # await client.change_presence(status=discord.Status.online, activity=discord.Game(name="/ 로 봇을 사용하세요"))
+    await client.change_presence(status=discord.Status.online, activity=discord.Game(name="/ 로 봇을 사용하세요"))
     await tree.sync()
-    # await tree.sync(guild=discord.Object(id=931084376803000370))
-    # print "ready" in the console when the bot is ready to work
     print("Bot is Ready.")
 
 
+
 # make the slash command
-@tree.command(name="calcpp", description="pp 계산기")
+@tree.command(name="calcpp", description="osu! PP 계산기")
 async def slash_command(interaction: discord.Interaction, star:float, accuracy:float, notes:int, _320:int):
     accuracy = accuracy/100
     maxpp = 8 * pow(max(star - 0.15, 0.05), 2.2) * (1 + 0.1 * min(1, notes / 1500))
@@ -65,6 +66,7 @@ async def slash_command(interaction: discord.Interaction, text:str):
     result = response["choices"][0]["message"]["content"]
     
     await msg.edit(content=result)
+
 
 
 @tree.command(name="osuinfo", description="osu! 유저 정보 조회")
@@ -96,7 +98,7 @@ async def osu_info(interaction: discord.Interaction, username:str):
 
 
 
-@tree.command(name="osubest", description="Fuckyou")
+@tree.command(name="osubest", description="osu! 최고 성과 조회")
 async def button_test(interaction:discord.Interaction, username:str):
     osu = Osu(OSU_CLIENT_ID, OSU_CLIENT_SECRET)
     global OSU_BEST_PAGENUM
@@ -128,39 +130,38 @@ async def button_test(interaction:discord.Interaction, username:str):
     prev.callback = prev_page
     next.callback = next_page
 
-    """ page_1 = discord.ui.Button(label="1", style=discord.ButtonStyle.secondary)
-    page_2 = discord.ui.Button(label="2", style=discord.ButtonStyle.secondary)
-    page_3 = discord.ui.Button(label="3", style=discord.ButtonStyle.secondary)
-    page_4 = discord.ui.Button(label="4", style=discord.ButtonStyle.secondary)
-
-    view = discord.ui.View()
-    view.add_item(page_1)
-    view.add_item(page_2)
-    view.add_item(page_3)
-    view.add_item(page_4)
-
-    async def show_page_1(interaction:discord.Interaction):
-        formated = osu.generate_user_best(username, 5, 0)
-        await interaction.response.edit_message(content=formated)
-    
-    async def show_page_2(interaction:discord.Interaction):
-        formated = osu.generate_user_best(username, 5, 5)
-        await interaction.response.edit_message(content=formated)
-    
-    async def show_page_3(interaction:discord.Interaction):
-        formated = osu.generate_user_best(username, 5, 10)
-        await interaction.response.edit_message(content=formated)
-    
-    async def show_page_4(interaction:discord.Interaction):
-        formated = osu.generate_user_best(username, 5, 15)
-        await interaction.response.edit_message(content=formated)
-    f"📋{pagenumber}/4"
-    page_1.callback = show_page_1
-    page_2.callback = show_page_2
-    page_3.callback = show_page_3
-    page_4.callback = show_page_4 """
-
     await interaction.response.send_message(f"```{osu.generate_user_best(username, 5, 0)}\n{OSU_BEST_PAGENUM}/8 page```", view=view)
+
+
+@tree.command(name="changestatus", description="bot의 상태를 변경합니다.")
+async def change_status(interaction:discord.Interaction):
+    view = discord.ui.View()
+
+    options = [
+        discord.SelectOption(label="온라인", description="온라인 상태로 변경합니다. 초록색", value="온라인"),
+        discord.SelectOption(label="자리 비움", description="자리비움 상태로 변경합니다. 노란색", value="자리비움"),
+        discord.SelectOption(label="다른 용무 중", description="다른 용무 중 상태로 변경합니다.", value="다른 용무 중"),
+        discord.SelectOption(label="오프라인", description="오프라인 상태로 변경합니다.", value="오프라인"),
+    ]
+    select = discord.ui.Select(placeholder="상태를 선택하세요", options=options)
+    view.add_item(select)
+
+    async def change(interaction:discord.Interaction):
+        match interaction.data['values'][0]:
+            case "온라인":
+                await client.change_presence(status=discord.Status.online)
+            case "자리비움":
+                await client.change_presence(status=discord.Status.idle)
+            case "다른 용무 중":
+                await client.change_presence(status=discord.Status.dnd)
+            case "오프라인":
+                await client.change_presence(status=discord.Status.offline)
+        
+        await interaction.response.edit_message(content=f"상태가 {interaction.data['values'][0]}로 변경되었습니다.")
+    
+    select.callback = change
+    await interaction.response.send_message("상태를 선택하세요", view=view)
+
 
 # run the bot
 client.run(DISCORD_TOKEN)
