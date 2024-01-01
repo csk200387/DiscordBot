@@ -117,7 +117,7 @@ class Osu:
             return int(data["pp"])
 
         notes = data["beatmap"]["count_circles"] + data["beatmap"]["count_sliders"]
-        accuracy = data["accuracy"]/100 
+        accuracy = data["accuracy"]
         maxpp = 8 * pow(max(data['beatmap']['difficulty_rating'] - 0.15, 0.05), 2.2) * (1 + 0.1 * min(1, notes / 1500))
         v2acc = accuracy * 0.9375 + 0.0625 * (data['statistics']['count_geki'] / notes)
         pp = round(maxpp * max(0, 5 * v2acc - 4), 2)
