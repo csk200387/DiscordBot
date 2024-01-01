@@ -144,7 +144,7 @@ async def osu_recent(interaction:discord.Interaction, username:str):
     status = recent_info[0]["beatmapset"]["status"]
     total_length = recent_info[0]["beatmap"]["total_length"]
     rank = recent_info[0]["rank"]
-    pp = int(recent_info[0]["pp"]) if recent_info[0]["pp"] != None else 0
+    pp = int(recent_info[0]["pp"]) if recent_info[0]["pp"] != None else f"{osu.calculate_pp(username)}🧐"
     mods = ", ".join(recent_info[0]["mods"])
     version = recent_info[0]["beatmap"]["version"]
     diff = recent_info[0]["beatmap"]["difficulty_rating"]
